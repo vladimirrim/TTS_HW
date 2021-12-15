@@ -194,20 +194,20 @@ class FFTransformer(nn.Module):
                     dropatt=dropatt, pre_lnorm=pre_lnorm)
             )
 
-    def forward(self, dec_inp, seq_lens=None, conditioning=0):
+    def forward(self, dec_inp, seq_lens=None, conditioning=0, prominence=0):
         if self.word_emb is None:
             inp = dec_inp
             mask = mask_from_lens(seq_lens).unsqueeze(2)
-            prom_inp = 0
         else:
             inp = self.word_emb(dec_inp)
             # [bsz x L x 1]
             mask = (dec_inp != self.padding_idx).unsqueeze(2)
+            prom_emb = self.prom_emb(prominence) * mask
 
         pos_seq = torch.arange(inp.size(1), device=inp.device).to(inp.dtype)
         pos_emb = self.pos_emb(pos_seq) * mask
 
-        out = self.drop(inp + pos_emb + conditioning)
+        out = self.drop(inp + pos_emb + conditioning + prom_emb)
 
         for layer in self.layers:
             out = layer(out, mask=mask)
