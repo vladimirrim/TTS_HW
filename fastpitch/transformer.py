@@ -198,6 +198,7 @@ class FFTransformer(nn.Module):
         if self.word_emb is None:
             inp = dec_inp
             mask = mask_from_lens(seq_lens).unsqueeze(2)
+            prom_emb = 0
         else:
             inp = self.word_emb(dec_inp)
             # [bsz x L x 1]
